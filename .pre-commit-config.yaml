@@ -43,6 +43,8 @@ repos:
           - --exit-non-zero-on-fix
 
       - id: ruff-format
+        args:
+          - --line-length=88
 
   - repo: local
     hooks:
