@@ -1,0 +1,19 @@
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+tag_format = "v$version"
+version_scheme = "semver2"
+version_provider = "npm"
+update_changelog_on_bump = true
+annotated_tag = true
+major_version_zero = true
+breaking_change_exclamation_in_title = true
+retry_after_failure = true
+
+version_files = [
+    "VERSION",
+    "package.json:version",
+    "package-lock.json:version",
+]
+
+bump_message = "bump: version $current_version -> $new_version"
