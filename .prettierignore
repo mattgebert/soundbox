@@ -1,0 +1,6 @@
+dist/
+coverage/
+node_modules/
+public/music/
+package-lock.json
+CHANGELOG.md
