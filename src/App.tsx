@@ -1,106 +1,73 @@
-import { useState } from "react";
-import heroImg from "./assets/hero.png";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "./assets/vite.svg";
-import "./App.css";
+import { useRef, useState } from "react";
 
-function App() {
-  const [count, setCount] = useState(0);
+import SpectrumCanvas from "./SpectrumCanvas";
+
+export default function App() {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  const [ready, setReady] = useState(false);
+  const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
+
+  async function enableVisualizer() {
+    const audio = audioRef.current;
+
+    if (!audio) {
+      return;
+    }
+
+    /*
+     * Do not create a second MediaElementAudioSourceNode for the
+     * same HTMLAudioElement.
+     */
+    if (analyserRef.current) {
+      return;
+    }
+
+    const context = new AudioContext();
+
+    /*
+     * Browsers can initially suspend an AudioContext until the user
+     * interacts with the page.
+     */
+    if (context.state === "suspended") {
+      await context.resume();
+    }
+
+    const source = context.createMediaElementSource(audio);
+    const newAnalyser = context.createAnalyser();
+
+    // newAnalyser.fftSize = 2048;
+    newAnalyser.fftSize = 8192;
+    newAnalyser.smoothingTimeConstant = 0.8;
+
+    source.connect(newAnalyser);
+    newAnalyser.connect(context.destination);
+
+    audioContextRef.current = context;
+    analyserRef.current = newAnalyser;
+
+    /*
+     * Updating state causes React to render SpectrumCanvas below.
+     */
+    setAnalyser(newAnalyser);
+    setReady(true);
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <main>
+      <h1>Soundbox</h1>
 
-      <div className="ticks"></div>
+      <p>Self-hosted audio visualization</p>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg className="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg className="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg className="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg className="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <audio ref={audioRef} controls src="./public/music/yes-jesus-loves-me.mp3" />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <button type="button" onClick={enableVisualizer} disabled={ready}>
+        {ready ? "Visualizer enabled" : "Enable visualizer"}
+      </button>
+
+      <SpectrumCanvas analyser={analyser} />
+    </main>
   );
 }
-
-export default App;
