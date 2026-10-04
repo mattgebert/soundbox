@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 
-import SpectrumCanvas from "./SpectrumCanvas";
+import SpectrumCanvas from "./widgets/SpectrumCanvas";
 
 export default function App() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
