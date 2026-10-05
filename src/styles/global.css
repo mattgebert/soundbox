@@ -1,0 +1,37 @@
+/* Global styles for the application */
+
+:root {
+  --color-primary: #ffffff;
+  --color-secondary: #448888;
+  --color-tertiary: #4682b4;
+  --color-bg-primary: #000010;
+  --color-bg-secondary: #888888;
+
+  --sans: system-ui, "Segoe UI", Roboto, sans-serif;
+  --heading: system-ui, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+}
+
+[data-theme="light"] {
+  --color-primary: #000010;
+  --color-secondary: steelblue;
+  --color-tertiary: #448888;
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #cccccc;
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-primary);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+canvas {
+  background-color: var(--color-bg-primary);
+  rect {
+    fill: var(--color-primary);
+  }
+}
