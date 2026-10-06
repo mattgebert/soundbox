@@ -6,7 +6,7 @@ import {
   primaryColor,
   secondaryColor,
   tertiaryColor,
-  darken_hex,
+  adjust_hex,
 } from "../util/colors.tsx";
 
 type Props = {
@@ -23,12 +23,12 @@ type Props = {
 const styleHorizontalLine = primaryColor;
 const styleLRMSPlayed = secondaryColor;
 const styleRRMSPlayed = tertiaryColor;
-const styleLPeakPlayed = darken_hex(styleLRMSPlayed, 0.7);
-const styleRPeakPlayed = darken_hex(styleRRMSPlayed, 0.7);
-const styleLPeakUnplayed = darken_hex(styleLPeakPlayed, 0.2);
-const styleLRMSUnplayed = darken_hex(styleLRMSPlayed, 0.2);
-const styleRPeakUnplayed = darken_hex(styleRPeakPlayed, 0.2);
-const styleRRMSUnplayed = darken_hex(styleRRMSPlayed, 0.2);
+const styleLPeakPlayed = adjust_hex(styleLRMSPlayed, 0.7);
+const styleRPeakPlayed = adjust_hex(styleRRMSPlayed, 0.7);
+const styleLPeakUnplayed = adjust_hex(styleLPeakPlayed, 0.2);
+const styleLRMSUnplayed = adjust_hex(styleLRMSPlayed, 0.2);
+const styleRPeakUnplayed = adjust_hex(styleRPeakPlayed, 0.2);
+const styleRRMSUnplayed = adjust_hex(styleRRMSPlayed, 0.2);
 
 /**
  * Renders a canvas containing the time spectrum provided by an
