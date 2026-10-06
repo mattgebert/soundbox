@@ -1,16 +1,16 @@
 import { useRef, useState } from "react";
 
-import SpectrumCanvas from "./widgets/SpectrumCanvas";
+import SpectrumCanvas from "./components/SpectrumCanvas";
 
 export default function App() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  const [ready, setReady] = useState(false);
+  const [readySpectra, setReadySpectra] = useState(false);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
 
-  async function enableVisualizer() {
+  async function enableSpectrumAnalyser() {
     const audio = audioRef.current;
 
     if (!audio) {
@@ -52,7 +52,7 @@ export default function App() {
      * Updating state causes React to render SpectrumCanvas below.
      */
     setAnalyser(newAnalyser);
-    setReady(true);
+    setReadySpectra(true);
   }
 
   return (
@@ -61,11 +61,15 @@ export default function App() {
 
       <p>Self-hosted audio visualization</p>
 
-      <audio ref={audioRef} controls src="./public/music/yes-jesus-loves-me.mp3" />
+      <h2>Example</h2>
+      <audio ref={audioRef} controls src="music/yes-jesus-loves-me.mp3" />
 
-      <button type="button" onClick={enableVisualizer} disabled={ready}>
-        {ready ? "Visualizer enabled" : "Enable visualizer"}
+      <h3>Spectrum Canvas</h3>
+
+      <button type="button" onClick={enableSpectrumAnalyser} disabled={readySpectra}>
+        {readySpectra ? "FFT Spectrum enabled" : "Enable FFT Spectrum"}
       </button>
+      <br />
 
       <SpectrumCanvas analyser={analyser} />
     </main>

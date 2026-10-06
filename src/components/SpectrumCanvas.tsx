@@ -4,6 +4,22 @@ type Props = {
   analyser: AnalyserNode | null;
 };
 
+// CSS
+import styles from "../styles/SpectrumCanvas.module.css";
+import "../styles/global.css";
+import { primaryColor, secondaryColor, tertiaryColor } from "../util/colors.tsx";
+
+function hexMap(value: number, base: string = tertiaryColor): string {
+  const r = parseInt(base.slice(1, 3), 16);
+  const g = parseInt(base.slice(3, 5), 16);
+  const b = parseInt(base.slice(5, 7), 16);
+  const frac = value / 255.0;
+  const newR = Math.min(255, Math.floor(r * frac));
+  const newG = Math.min(255, Math.floor(g * frac));
+  const newB = Math.min(255, Math.floor(b * frac));
+  return `rgb(${newR}, ${newG}, ${newB})`;
+}
+
 /**
  * Renders a canvas containing the frequency spectrum provided by an
  * AnalyserNode.
@@ -51,28 +67,17 @@ export default function SpectrumCanvas({ analyser }: Props) {
       activeAnalyser.getByteFrequencyData(frequencyData);
       activeContext.clearRect(0, 0, activeCanvas.width, activeCanvas.height);
 
-      // Add a label at the bottom left corner for the sampling rate
-      activeContext.fillStyle = "black";
-      activeContext.font = "12px Arial";
-      activeContext.fillText(
-        `Sampling Rate: ${activeAnalyser.context.sampleRate} Hz` +
-          `, FFT Size: ${activeAnalyser.fftSize}` +
-          `,\nDfreq: ${dfreq.toFixed(2)} Hz`,
-        10,
-        activeCanvas.height - 10,
-      );
-
       // Draw octave lines and labels
       for (let i = 0; i < octaves.length; i += 1) {
         const octave: number = octaves[i];
         const log2_octave: number = Math.log2(octave + 1); // +1 to avoid log2(0)
         const x: number = (log2_octave - min_log_f) * dx;
-        activeContext.strokeStyle = "rgba(255, 0, 0, 0.5)"; // Red color with some transparency
+        activeContext.strokeStyle = secondaryColor; // Red color with some transparency
         activeContext.beginPath();
         activeContext.moveTo(x, 0);
         activeContext.lineTo(x, activeCanvas.height);
         activeContext.stroke();
-        activeContext.fillStyle = "black";
+        activeContext.fillStyle = primaryColor;
         activeContext.fillText(`${octave.toFixed(2)} Hz`, x + 5, 10); // Label with frequency in Hz
         // also label which C for each octave
         activeContext.fillText(`C${i}`, x + 5, 25); // Label with the nearest C note
@@ -93,8 +98,11 @@ export default function SpectrumCanvas({ analyser }: Props) {
         const x_min = (Math.log2(freq_min + 1) - min_log_f) * dx; // +1 to avoid log2(0)
         const x_max = (Math.log2(freq_max + 1) - min_log_f) * dx; // +1 to avoid log2(0)
 
+        // Use the hexMap function to set the fill style
+        const col = hexMap(frequencyData[index]);
+
         // Draw a rectangle for the frequency bin
-        activeContext.fillStyle = `rgb(${frequencyData[index]}, 50, 50)`;
+        activeContext.fillStyle = col;
         activeContext.fillRect(
           x_min,
           activeCanvas.height - height,
@@ -102,6 +110,17 @@ export default function SpectrumCanvas({ analyser }: Props) {
           height,
         );
       }
+
+      // Add a label at the bottom left corner for the sampling rate
+      activeContext.fillStyle = primaryColor;
+      activeContext.font = "12px Arial";
+      activeContext.fillText(
+        `Sampling Rate: ${activeAnalyser.context.sampleRate} Hz` +
+          `, FFT Size: ${activeAnalyser.fftSize}` +
+          `,\nDfreq: ${dfreq.toFixed(2)} Hz`,
+        10,
+        activeCanvas.height - 10,
+      );
 
       /*
        * Schedule the next frame from inside draw().
@@ -120,5 +139,5 @@ export default function SpectrumCanvas({ analyser }: Props) {
     };
   }, [analyser]);
 
-  return <canvas ref={canvasRef} width={1000} height={300} />;
+  return <canvas ref={canvasRef} width={1000} height={300} className={styles.canvas} />;
 }
