@@ -1,7 +1,11 @@
 import { useRef, useState } from "react";
 
+// Components
 import SpectrumCanvas from "./components/SpectrumCanvas";
 import TimeIntensity from "./components/TimeIntensity";
+import HeaderBar from "./components/HeaderBar";
+
+// Processing
 import generateRmsAndPeak from "./processing/generateRmsAndPeak";
 
 export default function App() {
@@ -10,8 +14,6 @@ export default function App() {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  const [readySpectra, setReadySpectra] = useState(false);
-  const [readyTime, setReadyTime] = useState(false);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
   const [totalTime, setTotalTime] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -65,7 +67,6 @@ export default function App() {
      * Updating state causes React to render SpectrumCanvas below.
      */
     setAnalyser(newAnalyser);
-    setReadySpectra(true);
   }
 
   async function enableTimeIntensity() {
@@ -84,7 +85,6 @@ export default function App() {
     setTimedelta(timedelta);
     setTotalTime(audio.duration);
     setCurrentTime(audio.currentTime);
-    setReadyTime(true);
   }
 
   // Update state on audio time change
@@ -94,46 +94,43 @@ export default function App() {
     }
   };
 
+  const handleOnReady = () => {
+    enableTimeIntensity();
+    enableSpectrumAnalyser();
+  };
+
   return (
     <main>
-      <h1>Soundbox</h1>
+      {/* Add a header bar with the h1 title and the darktheme toggle, use FontAwesome icons */}
+      <HeaderBar />
 
-      <p>Self-hosted audio visualization</p>
+      {/* Add a 80% width container for the example audio player */}
+      <div style={{ width: "80%", margin: "0 auto" }}>
+        <h2>Example</h2>
+        <audio
+          ref={audioRef}
+          controls
+          src="music/yes-jesus-loves-me.mp3"
+          onTimeUpdate={handleTimeUpdate}
+          onCanPlayThrough={handleOnReady}
+        />
 
-      <h2>Example</h2>
-      <audio
-        ref={audioRef}
-        controls
-        src="music/yes-jesus-loves-me.mp3"
-        onTimeUpdate={handleTimeUpdate}
-      />
+        <h3>Spectrum Canvas</h3>
 
-      <h3>Spectrum Canvas</h3>
+        <SpectrumCanvas analyser={analyser} />
 
-      <button type="button" onClick={enableSpectrumAnalyser} disabled={readySpectra}>
-        {readySpectra ? "FFT Spectrum enabled" : "Enable FFT Spectrum"}
-      </button>
-      <br />
+        <h3>Time Intensity</h3>
 
-      <SpectrumCanvas analyser={analyser} />
-
-      <h3>Time Intensity</h3>
-
-      <button type="button" onClick={enableTimeIntensity} disabled={readyTime}>
-        {readyTime ? "Time intensity enabled" : "Enable time intensity"}
-      </button>
-
-      <br />
-
-      <TimeIntensity
-        currentTime={currentTime}
-        totalTime={totalTime}
-        rmsArrayL={rmsArrayL}
-        rmsArrayR={rmsArrayR}
-        peakArrayL={peakArrayL}
-        peakArrayR={peakArrayR}
-        timedelta={timedelta}
-      />
+        <TimeIntensity
+          currentTime={currentTime}
+          totalTime={totalTime}
+          rmsArrayL={rmsArrayL}
+          rmsArrayR={rmsArrayR}
+          peakArrayL={peakArrayL}
+          peakArrayR={peakArrayR}
+          timedelta={timedelta}
+        />
+      </div>
     </main>
   );
 }
