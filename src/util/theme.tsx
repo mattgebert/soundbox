@@ -72,11 +72,11 @@ export const getGlobalCSSVar = (varName: string): string => {
 };
 
 // Usage
-export const primaryColor: string = getGlobalCSSVar("--color-primary");
-export const secondaryColor: string = getGlobalCSSVar("--color-secondary");
-export const tertiaryColor: string = getGlobalCSSVar("--color-tertiary");
-export const bgPrimaryColor: string = getGlobalCSSVar("--color-bg-primary");
-export const bgSecondaryColor: string = getGlobalCSSVar("--color-bg-secondary");
+export const colorPrimary: string = getGlobalCSSVar("--color-primary");
+export const colorSecondary: string = getGlobalCSSVar("--color-secondary");
+export const colorTertiary: string = getGlobalCSSVar("--color-tertiary");
+export const bgColorPrimary: string = getGlobalCSSVar("--color-bg-primary");
+export const bgColorSecondary: string = getGlobalCSSVar("--color-bg-secondary");
 
 // Helper to grab root CSS variables safely
 const rootStyles = getComputedStyle(document.documentElement);

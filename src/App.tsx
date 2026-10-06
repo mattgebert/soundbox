@@ -106,7 +106,11 @@ export default function App() {
 
       {/* Add a 80% width container for the example audio player */}
       <div style={{ width: "80%", margin: "0 auto" }}>
-        <h2>Example</h2>
+        <h2>Song Demo: Jesus Loves Me</h2>
+        <p>
+          In the style of Kings Kaleidoscope "Oxygen". This audio element can be hidden,
+          as visualizations can host the audio.
+        </p>
         <audio
           ref={audioRef}
           controls

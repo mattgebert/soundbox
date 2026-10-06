@@ -2,18 +2,7 @@ import { useEffect, useRef } from "react";
 
 import styles from "../styles/TimeIntensity.module.css";
 import "../styles/global.css";
-
-// Use primary and secondary colors of global css.
-const styleHorizontalLine = "var(--color-primary)";
-const styleLRMSPlayed = "var(--color-secondary)";
-const styleRRMSPlayed = "var(--color-tertiary)";
-const styleLPeakPlayed = "color-mix(in srgb, var(--color-secondary) 70%, transparent)";
-const styleRPeakPlayed = "color-mix(in srgb, var(--color-tertiary) 70%, transparent)";
-const styleLPeakUnplayed =
-  "color-mix(in srgb, var(--color-secondary) 20%, transparent)";
-const styleRPeakUnplayed = "color-mix(in srgb, var(--color-tertiary) 20%, transparent)";
-const styleLRMSUnplayed = "color-mix(in srgb, var(--color-secondary) 10%, transparent)";
-const styleRRMSUnplayed = "color-mix(in srgb, var(--color-tertiary) 10%, transparent)";
+import { getGlobalCSSVar } from "../util/theme";
 
 type Props = {
   currentTime: number;
@@ -66,8 +55,28 @@ export default function TimeIntensity({
     const barWidth = activeCanvas.width / maxIndex;
 
     function draw() {
-      // Draw a graph from 0 to x
+      // Get colors from CSS variables
+      // Use primary and secondary colors of global css.
+      const colorPrimary: string = getGlobalCSSVar("--color-primary");
+      const colorSecondary: string = getGlobalCSSVar("--color-secondary");
+      const colorTertiary: string = getGlobalCSSVar("--color-tertiary");
+      const styleHorizontalLine = colorPrimary;
+      const styleLRMSPlayed = colorSecondary;
+      const styleRRMSPlayed = colorTertiary;
+      const styleLPeakPlayed =
+        "color-mix(in srgb, " + colorSecondary + " 70%, transparent)";
+      const styleRPeakPlayed =
+        "color-mix(in srgb, " + colorTertiary + " 70%, transparent)";
+      const styleLPeakUnplayed =
+        "color-mix(in srgb, " + colorSecondary + " 20%, transparent)";
+      const styleRPeakUnplayed =
+        "color-mix(in srgb, " + colorTertiary + " 20%, transparent)";
+      const styleLRMSUnplayed =
+        "color-mix(in srgb, " + colorSecondary + " 10%, transparent)";
+      const styleRRMSUnplayed =
+        "color-mix(in srgb, " + colorTertiary + " 10%, transparent)";
 
+      // Draw a graph from 0 to x
       activeContext.clearRect(0, 0, activeCanvas.width, activeCanvas.height);
       // Draw a horizontal line in the middle of the canvas
       activeContext.strokeStyle = styleHorizontalLine;
