@@ -1,3 +1,25 @@
+import "@mui/material/styles";
+
+declare module "@mui/material/styles" {
+  interface Palette {
+    tertiary: Palette["primary"];
+  }
+  interface PaletteOptions {
+    tertiary?: PaletteOptions["primary"];
+  }
+  interface TypeBackground {
+    secondary?: string; // Add secondary background color
+  }
+}
+
+declare module "@mui/material/Button" {
+  interface ButtonPropsColorOverrides {
+    tertiary: true;
+  }
+}
+
+import { createTheme } from "@mui/material/styles";
+
 // Darken unplayed colors
 /** Adjusts a hex color by a fraction. If zero_dark is true, it darkens the color; otherwise, it lightens it.
  *
@@ -55,3 +77,25 @@ export const secondaryColor: string = getGlobalCSSVar("--color-secondary");
 export const tertiaryColor: string = getGlobalCSSVar("--color-tertiary");
 export const bgPrimaryColor: string = getGlobalCSSVar("--color-bg-primary");
 export const bgSecondaryColor: string = getGlobalCSSVar("--color-bg-secondary");
+
+// Helper to grab root CSS variables safely
+const rootStyles = getComputedStyle(document.documentElement);
+const getCssVar = (variable: string) => rootStyles.getPropertyValue(variable).trim();
+
+export const colorTheme = createTheme({
+  palette: {
+    primary: {
+      main: getCssVar("--color-primary"),
+    },
+    secondary: {
+      main: getCssVar("--color-secondary"),
+    },
+    tertiary: {
+      main: getCssVar("--color-tertiary"),
+    },
+    background: {
+      default: getCssVar("--color-bg-primary"),
+      secondary: getCssVar("--color-bg-secondary"),
+    },
+  },
+});

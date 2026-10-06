@@ -2,12 +2,18 @@ import { useEffect, useRef } from "react";
 
 import styles from "../styles/TimeIntensity.module.css";
 import "../styles/global.css";
-import {
-  primaryColor,
-  secondaryColor,
-  tertiaryColor,
-  adjust_hex,
-} from "../util/colors.tsx";
+
+// Use primary and secondary colors of global css.
+const styleHorizontalLine = "var(--color-primary)";
+const styleLRMSPlayed = "var(--color-secondary)";
+const styleRRMSPlayed = "var(--color-tertiary)";
+const styleLPeakPlayed = "color-mix(in srgb, var(--color-secondary) 70%, transparent)";
+const styleRPeakPlayed = "color-mix(in srgb, var(--color-tertiary) 70%, transparent)";
+const styleLPeakUnplayed =
+  "color-mix(in srgb, var(--color-secondary) 20%, transparent)";
+const styleRPeakUnplayed = "color-mix(in srgb, var(--color-tertiary) 20%, transparent)";
+const styleLRMSUnplayed = "color-mix(in srgb, var(--color-secondary) 10%, transparent)";
+const styleRRMSUnplayed = "color-mix(in srgb, var(--color-tertiary) 10%, transparent)";
 
 type Props = {
   currentTime: number;
@@ -18,17 +24,6 @@ type Props = {
   peakArrayR: number[];
   timedelta: number;
 };
-
-// Use primary and secondary colors of global css.
-const styleHorizontalLine = primaryColor;
-const styleLRMSPlayed = secondaryColor;
-const styleRRMSPlayed = tertiaryColor;
-const styleLPeakPlayed = adjust_hex(styleLRMSPlayed, 0.7);
-const styleRPeakPlayed = adjust_hex(styleRRMSPlayed, 0.7);
-const styleLPeakUnplayed = adjust_hex(styleLPeakPlayed, 0.2);
-const styleLRMSUnplayed = adjust_hex(styleLRMSPlayed, 0.2);
-const styleRPeakUnplayed = adjust_hex(styleRPeakPlayed, 0.2);
-const styleRRMSUnplayed = adjust_hex(styleRRMSPlayed, 0.2);
 
 /**
  * Renders a canvas containing the time spectrum provided by an
@@ -132,16 +127,16 @@ export default function TimeIntensity({
         );
       }
 
-      activeContext.fillStyle = primaryColor;
+      activeContext.fillStyle = styleHorizontalLine;
       activeContext.font = "10px Arial";
       const time_mins = Math.floor(currentTime / 60);
-      const time_secs = Math.floor((currentTime % 60) * 10) / 10;
+      const time_secs = Math.floor(currentTime % 60);
       const total_mins = Math.floor(totalTime / 60);
-      const total_secs = Math.floor((totalTime % 60) * 10) / 10;
+      const total_secs = Math.floor(totalTime % 60);
       activeContext.fillText(
-        `${time_mins}:${time_secs.toString().padStart(4, "0")}` +
+        `${time_mins}:${time_secs.toString().padStart(2, "0")}` +
           ` / ` +
-          `${total_mins}:${total_secs.toString().padStart(4, "0")}`,
+          `${total_mins}:${total_secs.toString().padStart(2, "0")}`,
         10,
         activeCanvas.height - 10,
       );

@@ -7,18 +7,6 @@ type Props = {
 // CSS
 import styles from "../styles/SpectrumCanvas.module.css";
 import "../styles/global.css";
-import { primaryColor, secondaryColor, tertiaryColor } from "../util/colors.tsx";
-
-function hexMap(value: number, base: string = tertiaryColor): string {
-  const r = parseInt(base.slice(1, 3), 16);
-  const g = parseInt(base.slice(3, 5), 16);
-  const b = parseInt(base.slice(5, 7), 16);
-  const frac = value / 255.0;
-  const newR = Math.min(255, Math.floor(r * frac));
-  const newG = Math.min(255, Math.floor(g * frac));
-  const newB = Math.min(255, Math.floor(b * frac));
-  return `rgb(${newR}, ${newG}, ${newB})`;
-}
 
 /**
  * Renders a canvas containing the frequency spectrum provided by an
@@ -72,12 +60,12 @@ export default function SpectrumCanvas({ analyser }: Props) {
         const octave: number = octaves[i];
         const log2_octave: number = Math.log2(octave + 1); // +1 to avoid log2(0)
         const x: number = (log2_octave - min_log_f) * dx;
-        activeContext.strokeStyle = secondaryColor; // Red color with some transparency
+        activeContext.strokeStyle = "var(--color-secondary)"; // Red color with some transparency
         activeContext.beginPath();
         activeContext.moveTo(x, 0);
         activeContext.lineTo(x, activeCanvas.height);
         activeContext.stroke();
-        activeContext.fillStyle = primaryColor;
+        activeContext.fillStyle = "var(--color-primary)"; // Use primary color for text
         activeContext.fillText(`${octave.toFixed(2)} Hz`, x + 5, 10); // Label with frequency in Hz
         // also label which C for each octave
         activeContext.fillText(`C${i}`, x + 5, 25); // Label with the nearest C note
@@ -99,7 +87,10 @@ export default function SpectrumCanvas({ analyser }: Props) {
         const x_max = (Math.log2(freq_max + 1) - min_log_f) * dx; // +1 to avoid log2(0)
 
         // Use the hexMap function to set the fill style
-        const col = hexMap(frequencyData[index]);
+        const col =
+          "color-mix(in srgb, var(--color-tertiary) " +
+          Math.floor(fraction * 100) +
+          "%, transparent)"; // Use CSS color-mix to blend with transparency
 
         // Draw a rectangle for the frequency bin
         activeContext.fillStyle = col;
@@ -112,7 +103,7 @@ export default function SpectrumCanvas({ analyser }: Props) {
       }
 
       // Add a label at the bottom left corner for the sampling rate
-      activeContext.fillStyle = primaryColor;
+      activeContext.fillStyle = "var(--color-primary)"; // Use primary color for text
       activeContext.font = "12px Arial";
       activeContext.fillText(
         `Sampling Rate: ${activeAnalyser.context.sampleRate} Hz` +
