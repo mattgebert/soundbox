@@ -1,4 +1,5 @@
 /** Basic utility functions for the components  */
+import { useEffect, useState } from "react";
 
 // Darken unplayed colors
 /** Adjusts a hex color by a fraction. If zero_dark is true, it darkens the color; otherwise, it lightens it.
@@ -50,6 +51,30 @@ export const getGlobalCSSVar = (varName: string): string => {
   // alert(`${varName} has value ${value}`);
   return value;
 };
+
+export function useSystemDarkMode(): boolean {
+  // Initialize state with the current system setting
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false; // Handle SSR safely
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    // Handler to update state when the system setting changes
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsDark(event.matches);
+    };
+
+    // Listen for OS-level theme changes
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  return isDark;
+}
 
 // Usage
 export const primaryColor: string = getGlobalCSSVar("--color-primary");
