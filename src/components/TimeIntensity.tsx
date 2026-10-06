@@ -14,6 +14,17 @@ type Props = {
   timedelta: number;
 };
 
+function formatTime(time: number): string {
+  if (!Number.isFinite(time) || time < 0) {
+    return "0:00";
+  }
+
+  const minutes = Math.floor(time / 60);
+  const seconds = Math.floor(time % 60);
+
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
 /**
  * Renders a canvas containing the time spectrum provided by an
  * AnalyserNode.
@@ -138,14 +149,9 @@ export default function TimeIntensity({
 
       activeContext.fillStyle = styleHorizontalLine;
       activeContext.font = "10px Arial";
-      const time_mins = Math.floor(currentTime / 60);
-      const time_secs = Math.floor(currentTime % 60);
-      const total_mins = Math.floor(totalTime / 60);
-      const total_secs = Math.floor(totalTime % 60);
+
       activeContext.fillText(
-        `${time_mins}:${time_secs.toString().padStart(2, "0")}` +
-          ` / ` +
-          `${total_mins}:${total_secs.toString().padStart(2, "0")}`,
+        `${formatTime(currentTime)}` + ` / ` + `${formatTime(totalTime)}`,
         10,
         activeCanvas.height - 10,
       );
