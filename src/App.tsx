@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 
 // Components
 import SpectrumCanvas from "./components/SpectrumCanvas";
@@ -23,6 +23,10 @@ export default function App() {
   const [peakArrayL, setPeakArrayL] = useState<number[]>([]);
   const [peakArrayR, setPeakArrayR] = useState<number[]>([]);
   const [timedelta, setTimedelta] = useState<number>(0.05);
+
+  // --------------------------------------------------------
+  // Functions for the SpectrumCanvas component
+  // --------------------------------------------------------
 
   // Pre-generate the RMS and peak arrays for the known audio file. In a real application, you might want to do this on the server side or in a Web Worker to avoid blocking the main thread.
   async function enableSpectrumAnalyser() {
@@ -69,6 +73,28 @@ export default function App() {
     setAnalyser(newAnalyser);
   }
 
+  // --------------------------------------------------------
+  // Functions for the TimeIntensity component
+  // --------------------------------------------------------
+  const handleSeek = useCallback((time: number) => {
+    const audio = audioRef.current;
+
+    if (!audio || !Number.isFinite(audio.duration)) {
+      return;
+    }
+
+    const clampedTime = Math.min(audio.duration, Math.max(0, time));
+
+    audio.currentTime = clampedTime;
+
+    /*
+     * timeupdate is not guaranteed to fire immediately after assigning
+     * currentTime, so update React state directly for immediate visual
+     * feedback.
+     */
+    setCurrentTime(clampedTime);
+  }, []);
+
   async function enableTimeIntensity() {
     const audio = audioRef.current;
     if (!audio) {
@@ -87,12 +113,41 @@ export default function App() {
     setCurrentTime(audio.currentTime);
   }
 
-  // Update state on audio time change
   const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
+    const audio = audioRef.current;
+    if (audio) {
+      setCurrentTime(audio.currentTime);
     }
   };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+    };
+
+    const handleLoadedMetadata = () => {
+      setTotalTime(Number.isFinite(audio.duration) ? audio.duration : 0);
+    };
+
+    const handleDurationChange = () => {
+      setTotalTime(Number.isFinite(audio.duration) ? audio.duration : 0);
+    };
+
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("durationchange", handleDurationChange);
+
+    return () => {
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("durationchange", handleDurationChange);
+    };
+  }, []);
 
   const handleOnReady = () => {
     enableTimeIntensity();
@@ -133,6 +188,7 @@ export default function App() {
           peakArrayL={peakArrayL}
           peakArrayR={peakArrayR}
           timedelta={timedelta}
+          onSeek={handleSeek}
         />
       </div>
     </main>
