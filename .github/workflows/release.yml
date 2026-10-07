@@ -35,6 +35,31 @@ jobs:
       - name: Install Commitizen
         run: python -m pip install commitizen
 
+      # ------------------------------------------------------------
+      # RELEASE GATE
+      # Validate exactly the commits that are about to be released.
+      # ------------------------------------------------------------
+
+      - name: Find previous release
+        id: previous
+        shell: bash
+        run: |
+          PREVIOUS_TAG="$(git describe --tags --abbrev=0)"
+          echo "tag=${PREVIOUS_TAG}" >> "$GITHUB_OUTPUT"
+          echo "Previous release: ${PREVIOUS_TAG}"
+
+      - name: Validate commits since previous release
+        env:
+          PREVIOUS_TAG: ${{ steps.previous.outputs.tag }}
+        shell: bash
+        run: |
+          echo "Validating ${PREVIOUS_TAG}..HEAD"
+          cz check --rev-range "${PREVIOUS_TAG}..HEAD"
+
+      # ------------------------------------------------------------
+      # RELEASE
+      # ------------------------------------------------------------
+
       - name: Configure Git identity
         run: |
           git config user.name "github-actions[bot]"
@@ -44,14 +69,46 @@ jobs:
       - name: Bump version and update changelog
         run: cz bump --yes --changelog
 
-      - name: Push release commit and tag
-        run: git push --follow-tags origin main
-
       - name: Read released version
         id: version
         shell: bash
         run: |
           echo "version=$(cat VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Generate release notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          awk -v version="$VERSION" '
+            BEGIN { found = 0 }
+
+            /^## / {
+              if (found) {
+                exit
+              }
+
+              if ($0 ~ "^## v?" version "([ (]|$)") {
+                found = 1
+                next
+              }
+            }
+
+            found {
+              print
+            }
+          ' CHANGELOG.md > release-notes.md
+
+          if [ ! -s release-notes.md ]; then
+            echo "::error::Could not extract release notes for version ${VERSION}"
+            exit 1
+          fi
+
+          echo "Release notes:"
+          cat release-notes.md
+
+      - name: Push release commit and tag
+        run: git push --follow-tags origin main
 
       - name: Create GitHub release
         env:
@@ -60,5 +117,5 @@ jobs:
         run: |
           gh release create "v${VERSION}" \
             --verify-tag \
-            --generate-notes \
-            --title "Soundbox v${VERSION}"
+            --title "Soundbox v${VERSION}" \
+            --notes-file release-notes.md
