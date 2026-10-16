@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import SpectrumCanvas from "./components/SpectrumCanvas";
 import TimeIntensity from "./components/TimeIntensity";
 import HeaderBar from "./components/HeaderBar";
+// import CqtCanvas from "./components/CQTCanvas";
 
 // Processing
 import generateRmsAndPeak from "./processing/generateRmsAndPeak";
@@ -177,6 +178,9 @@ export default function App() {
         <h3>Spectrum Canvas</h3>
 
         <SpectrumCanvas analyser={analyser} />
+
+        {/* <h3>Constant-Q Transform (CQT) Canvas</h3> */}
+        {/* <CqtCanvas analyser={analyser} /> */}
 
         <h3>Time Intensity</h3>
 
