@@ -1,7 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { MdSettings } from "react-icons/md";
+import { Box, Fade, IconButton } from "@mui/material";
 
 type Props = {
   analyser: AnalyserNode | null;
+  width?: number;
+  height?: number;
 };
 
 // CSS
@@ -14,8 +18,15 @@ import { getGlobalCSSVar } from "../util/theme";
  * Renders a canvas containing the frequency spectrum provided by an
  * AnalyserNode.
  */
-export default function SpectrumCanvas({ analyser }: Props) {
+export default function SpectrumCanvas({
+  analyser,
+  width = 1000,
+  height = 300,
+}: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [hover, setHover] = useState(false);
+
+  const dpr = window.devicePixelRatio || 1;
 
   useEffect(() => {
     if (!analyser) {
@@ -36,6 +47,11 @@ export default function SpectrumCanvas({ analyser }: Props) {
       return;
     }
     const activeContext = context;
+
+    // Setup the canvas dimensions for high-DPI displays
+    activeCanvas.width = width * dpr;
+    activeCanvas.height = height * dpr;
+    activeContext.font = "12px Arial";
 
     // Get the frequency data from the analyser and draw it to the canvas.
     const frequencyData = new Uint8Array(analyser.frequencyBinCount);
@@ -67,15 +83,16 @@ export default function SpectrumCanvas({ analyser }: Props) {
         const octave: number = octaves[i];
         const log2_octave: number = Math.log2(octave + 1); // +1 to avoid log2(0)
         const x: number = (log2_octave - min_log_f) * dx;
+        const xp1: number = (Math.log2(octave * 2 + 1) - min_log_f) * dx; // Next octave
         activeContext.strokeStyle = colorSecondary; // Red color with some transparency
         activeContext.beginPath();
         activeContext.moveTo(x, 0);
         activeContext.lineTo(x, activeCanvas.height);
         activeContext.stroke();
         activeContext.fillStyle = colorPrimary; // Use primary color for text
-        activeContext.fillText(`${octave.toFixed(2)} Hz`, x + 5, 10); // Label with frequency in Hz
+        activeContext.fillText(`${octave.toFixed(2)} Hz`, x + 5, 10, xp1 - 5); // Label with frequency in Hz
         // also label which C for each octave
-        activeContext.fillText(`C${i}`, x + 5, 25); // Label with the nearest C note
+        activeContext.fillText(`C${i}`, x + 5, 25, xp1 - 5); // Label with the nearest C note
       }
 
       // Draw the frequency spectrum
@@ -113,7 +130,6 @@ export default function SpectrumCanvas({ analyser }: Props) {
 
       // Add a label at the bottom left corner for the sampling rate
       activeContext.fillStyle = colorPrimary; // Use primary color for text
-      activeContext.font = "12px Arial";
       activeContext.fillText(
         `Sampling Rate: ${activeAnalyser.context.sampleRate} Hz` +
           `, FFT Size: ${activeAnalyser.fftSize}` +
@@ -139,5 +155,32 @@ export default function SpectrumCanvas({ analyser }: Props) {
     };
   }, [analyser]);
 
-  return <canvas ref={canvasRef} width={1000} height={300} className={styles.canvas} />;
+  return (
+    <Box
+      sx={{ position: "relative" }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      {/* Add 200 px height to the canvas */}
+      <canvas ref={canvasRef} className={styles.canvas} />
+      <Fade in={hover}>
+        <IconButton
+          className={styles.settingsButton}
+          sx={{
+            position: "absolute",
+            bottom: 8,
+            right: 8,
+            borderRadius: 1,
+            color: getGlobalCSSVar("--color-primary"),
+            backgroundColor: "transparent",
+            "&:hover": {
+              backgroundColor: getGlobalCSSVar("--color-bg-secondary"),
+            },
+          }}
+        >
+          <MdSettings />
+        </IconButton>
+      </Fade>
+    </Box>
+  );
 }
